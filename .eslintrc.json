@@ -11,5 +11,12 @@
         "sourceType": "module"
     },
     "rules": {
+    },
+    "globals": {
+      "test": true,
+      "beforeAll": true,
+      "expect": true,
+      "process": true,
+      "afterAll": true
     }
 }

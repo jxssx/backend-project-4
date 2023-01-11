@@ -10,6 +10,8 @@ program
   .version('0.0.1')
   .option('-o, --output [dir]', 'output dir', process.cwd())
   .action((url, options) => {
-    console.log(loadPage(url, options.output));
+    loadPage(url, options.output).then((filename) => {
+      console.log(filename);
+    });
   })
   .parse(process.argv);
