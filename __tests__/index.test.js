@@ -8,7 +8,7 @@ const getFixturePath = (filename) => path.join('__fixtures__', filename);
 
 let tmpDirPath = '';
 let replyData = '';
-const fileName = 'web-ics-purdue-edu--gchopra-class-public-pages-webdesign-05-simple-html.html';
+const fileName = 'ru-hexlet-io-courses.html';
 
 beforeAll(async () => {
   replyData = await fsp.readFile(getFixturePath('reply.txt'), 'utf8');
@@ -21,10 +21,10 @@ afterAll(async () => {
 });
 
 test('loadPage', async () => {
-  nock('https://web.ics.purdue.edu')
-    .get('/~gchopra/class/public/pages/webdesign/05_simple.html')
+  nock('https://ru.hexlet.io')
+    .get('/courses')
     .reply(200, replyData);
-  const result = await loadPage('https://web.ics.purdue.edu/~gchopra/class/public/pages/webdesign/05_simple.html', tmpDirPath);
+  const result = await loadPage('https://ru.hexlet.io/courses', tmpDirPath);
   expect(result).toBe(`${tmpDirPath}/${fileName}`);
   expect(await fsp.readFile(`${tmpDirPath}/${fileName}`, 'utf8'))
     .toBe(await fsp.readFile(getFixturePath('expected.html'), 'utf8'));
