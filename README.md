@@ -9,3 +9,6 @@
 
 ### page-loader demo:
 [![asciicast](https://asciinema.org/a/yWnjPJt5mCvmjNNdQNXoGcK8l.svg)](https://asciinema.org/a/yWnjPJt5mCvmjNNdQNXoGcK8l)
+
+### page-loader assets downloading functionality demo:
+[![asciicast](https://asciinema.org/a/QzN0x6yRmPv7QRsUca2LHOOxL.svg)](https://asciinema.org/a/QzN0x6yRmPv7QRsUca2LHOOxL)
