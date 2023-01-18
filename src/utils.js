@@ -26,6 +26,7 @@ export const processAssets = (url, data, output) => {
   const dirPath = path.join(output, dirName);
   const buildAssetLink = (assetLink) => `${assetLink}`;
   const $ = cheerio.load(data);
+  // eslint-disable-next-line no-unused-vars
   const assetsPromises = $('img').map(function (_) {
     const attr = $(this).attr('src');
     const assetLink = buildAssetLink(attr);
