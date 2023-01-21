@@ -8,9 +8,13 @@ export const urlToName = (url, type) => {
   const symbolsReplaced = cutUrl.replaceAll(/\W|_/ig, '-');
   switch (type) {
     case 'html':
-      return `${symbolsReplaced}.html`
+      return `${symbolsReplaced}.html`;
       case 'img':
         return symbolsReplaced.replaceAll(/-(?=png|jpg|svg)/g, '.');
+      case 'link':
+        return symbolsReplaced.replaceAll(/-(?=css|html)/g, '.');
+      case 'script':
+        return symbolsReplaced.replaceAll(/-(?=js)/g, '.');
       default:
         return symbolsReplaced;
   }
@@ -24,18 +28,34 @@ export const buildPathToHtml = (url, output) => {
 export const processAssets = (url, data, output) => {
   const dirName = `${urlToName(url)}_files`;
   const dirPath = path.join(output, dirName);
-  const buildAssetLink = (assetLink) => `${assetLink}`;
+  const urlAPI = new URL(url);
+  const buildAssetLink = (assetLink) => `${urlAPI.protocol}//${urlAPI.host}${assetLink}`;
+  const tagAttrMapping = {
+    img: 'src',
+    link: 'href',
+  };
   const $ = cheerio.load(data);
-  // eslint-disable-next-line no-unused-vars
-  const assetsPromises = $('img').map(function (_) {
-    const attr = $(this).attr('src');
-    const assetLink = buildAssetLink(attr);
-    const assetName = urlToName(assetLink, 'img');
-    $(this).attr("src", path.join(dirName, assetName));
+  
+  const makeAssetsPromises = (tag) => $(`${tag}[${tagAttrMapping[tag]}]`)
+  .filter(function () {
+    const attrName = tagAttrMapping[tag];
+    const link =  new URL($(this).attr(attrName), urlAPI.origin);
+    return link.origin === urlAPI.origin; 
+  })
+  .map(function () {
+    const attrName = tagAttrMapping[tag];
+    const attrValue = $(this).attr(tagAttrMapping[tag]);
+    const assetLink = buildAssetLink(attrValue);
+    const assetFileName = urlToName(assetLink, tag);
+    $(this).attr(attrName, path.join(dirName, assetFileName));
     return axios({
       url: assetLink,
       responseType: 'arraybuffer',
-    }).then(({ data }) => fsp.writeFile(path.join(dirPath, assetName), data))});
+    }).then(({ data }) => fsp.writeFile(path.join(dirPath, assetFileName), data))});
+
+  const assetsPromises = Object.keys(tagAttrMapping).flatMap((tag) => {
+    return makeAssetsPromises(tag);
+  });
   return fsp.mkdir(dirPath)
     .then(() => Promise.all(assetsPromises))
     .then(() => $.html());

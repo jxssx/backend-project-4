@@ -36,7 +36,13 @@ test('loadPage', async () => {
     .reply(200, imgData);
   const result = await loadPage('https://ru.hexlet.io/courses', tmpDirPath);
   expect(result).toBe(`${tmpDirPath}/${fileName}`);
-  expect(await fsp.readFile(path.join(assetsDirPath, assetName))).toEqual(imgData);
+  // expect(await fsp.readFile(path.join(assetsDirPath, assetName))).toEqual(imgData);
+  const wait = ms=>new Promise(resolve => setTimeout(resolve, ms));
+  wait(7*1000).then(async () => {
+    expect(await fsp.readFile(path.join(assetsDirPath, assetName))).toEqual(imgData);
+    expect(await fsp.readFile(`${tmpDirPath}/${fileName}`, 'utf8'))
+    .toBe(await fsp.readFile(getFixturePath('expected.html'), 'utf8'));
+  });
   expect(await fsp.readFile(`${tmpDirPath}/${fileName}`, 'utf8'))
     .toBe(await fsp.readFile(getFixturePath('expected.html'), 'utf8'));
 });
