@@ -10,5 +10,8 @@
 ### page-loader demo:
 [![asciicast](https://asciinema.org/a/yWnjPJt5mCvmjNNdQNXoGcK8l.svg)](https://asciinema.org/a/yWnjPJt5mCvmjNNdQNXoGcK8l)
 
-### page-loader assets downloading functionality demo:
+### page-loader img downloading functionality demo:
 [![asciicast](https://asciinema.org/a/QzN0x6yRmPv7QRsUca2LHOOxL.svg)](https://asciinema.org/a/QzN0x6yRmPv7QRsUca2LHOOxL)
+
+### page-loader assets downloading functionality demo:
+[![asciicast](https://asciinema.org/a/BijRdIjff8qi7rljasecrv64g.svg)](https://asciinema.org/a/BijRdIjff8qi7rljasecrv64g)
