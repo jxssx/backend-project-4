@@ -3,33 +3,30 @@ import cheerio from 'cheerio';
 import axios from 'axios';
 import fsp from 'fs/promises';
 
-export const urlToName = (url, type) => {
-  const cutUrl = url.replace(`${new URL(url).protocol}//`, '');
-  const symbolsReplaced = cutUrl.replaceAll(/\W|_/ig, '-');
-  switch (type) {
-    case 'html':
-      return `${symbolsReplaced}.html`;
-      case 'img':
-        return symbolsReplaced.replaceAll(/-(?=png$|jpg$|svg$)/g, '.');
-      case 'link':
-        if (symbolsReplaced.includes('html') || symbolsReplaced.includes('css')) {
-          return symbolsReplaced.replaceAll(/-(?=css$|html$)/g, '.');
-        }
-        return `${symbolsReplaced}.html`
-      case 'script':
-        return symbolsReplaced.replaceAll(/-(?=js$)/g, '.');
-      default:
-        return symbolsReplaced;
-  }
+
+const cutUrl = (url) => url.replace(`${new URL(url).protocol}//`, '');
+
+const processName = (name, replacer = '-') => name.match(/\w*/gi)
+  .filter((x) => x)
+  .join(replacer);
+  
+export const urlToName = (url, defaultFormat = 'html') => {
+  const urlWithoutProtocol = cutUrl(url);
+  const { ext } = path.parse(url);
+  const format = ext.replace('.', '');
+  const finalFormat = format || defaultFormat;
+  const regex = new RegExp(`-${finalFormat}$`, 'g');
+  const symbolsReplaced = processName(urlWithoutProtocol).replace(regex, '');
+  return `${symbolsReplaced}.${finalFormat}`;
 };
 
 export const buildPathToHtml = (url, output) => {
-  const fileName = urlToName(url, 'html');
+  const fileName = urlToName(url);
   return path.resolve(process.cwd(), output, fileName);
 };
 
 export const processAssets = (url, data, output) => {
-  const dirName = `${urlToName(url)}_files`;
+  const dirName = `${processName(cutUrl(url))}_files`;
   const dirPath = path.join(output, dirName);
   const urlAPI = new URL(url);
   const buildAssetLink = (assetLink) => {
@@ -55,7 +52,7 @@ export const processAssets = (url, data, output) => {
     const attrName = tagAttrMapping[tag];
     const attrValue = $(this).attr(tagAttrMapping[tag]);
     const assetLink = buildAssetLink(attrValue);
-    const assetFileName = urlToName(assetLink, tag);
+    const assetFileName = urlToName(assetLink);
     $(this).attr(attrName, path.join(dirName, assetFileName));
     return axios({
       url: assetLink,
