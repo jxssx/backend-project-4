@@ -10,11 +10,14 @@ export const urlToName = (url, type) => {
     case 'html':
       return `${symbolsReplaced}.html`;
       case 'img':
-        return symbolsReplaced.replaceAll(/-(?=png|jpg|svg)/g, '.');
+        return symbolsReplaced.replaceAll(/-(?=png$|jpg$|svg$)/g, '.');
       case 'link':
-        return symbolsReplaced.replaceAll(/-(?=css|html)/g, '.');
+        if (symbolsReplaced.includes('html') || symbolsReplaced.includes('css')) {
+          return symbolsReplaced.replaceAll(/-(?=css$|html$)/g, '.');
+        }
+        return `${symbolsReplaced}.html`
       case 'script':
-        return symbolsReplaced.replaceAll(/-(?=js)/g, '.');
+        return symbolsReplaced.replaceAll(/-(?=js$)/g, '.');
       default:
         return symbolsReplaced;
   }
@@ -29,10 +32,16 @@ export const processAssets = (url, data, output) => {
   const dirName = `${urlToName(url)}_files`;
   const dirPath = path.join(output, dirName);
   const urlAPI = new URL(url);
-  const buildAssetLink = (assetLink) => `${urlAPI.protocol}//${urlAPI.host}${assetLink}`;
+  const buildAssetLink = (assetLink) => {
+    if (assetLink.includes(urlAPI.host)) {
+      return assetLink;
+    }
+    return `${urlAPI.protocol}//${urlAPI.host}${assetLink}`;
+  };
   const tagAttrMapping = {
     img: 'src',
     link: 'href',
+    script: 'src',
   };
   const $ = cheerio.load(data);
   
@@ -51,7 +60,7 @@ export const processAssets = (url, data, output) => {
     return axios({
       url: assetLink,
       responseType: 'arraybuffer',
-    }).then(({ data }) => fsp.writeFile(path.join(dirPath, assetFileName), data))});
+    }).then(({ data }) => fsp.writeFile(path.join(dirPath, assetFileName), data))}).get();
 
   const assetsPromises = Object.keys(tagAttrMapping).flatMap((tag) => {
     return makeAssetsPromises(tag);
