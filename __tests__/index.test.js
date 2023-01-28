@@ -8,12 +8,7 @@ const getFixturePath = (filename) => path.join('__fixtures__', filename);
 
 let tmpDirPath = '';
 let replyData = '';
-let imgData = '';
-let styleSheet = '';
-let script = '';
 let assetsDirPath = '';
-const imgAssetName = 'ru-hexlet-io-assets-professions-nodejs.png';
-const cssAssetName = 'ru-hexlet-io-assets-application.css'
 const fileName = 'ru-hexlet-io-courses.html';
 const baseURL = 'https://ru.hexlet.io';
 let assetData;
@@ -28,13 +23,12 @@ nock.disableNetConnect();
 
 beforeAll(async () => {
   replyData = await fsp.readFile(getFixturePath('reply.txt'), 'utf8');
-  styleSheet = await fsp.readFile(getFixturePath('application.css'));
-  script = await fsp.readFile(getFixturePath('runtime.js'));
-  imgData = await fsp.readFile(getFixturePath('nodejs_logo.png'));
   tmpDirPath = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
   assetsDirPath = path.join(tmpDirPath, 'ru-hexlet-io-courses_files');
-  assetData = [{ link: '/assets/professions/nodejs.png', data: imgData }, { link: '/assets/application.css', data: styleSheet },
-    {link: '/packs/js/runtime.js', data: script}];
+  assetData = [{ filename: 'ru-hexlet-io-assets-professions-nodejs.png', link: '/assets/professions/nodejs.png',
+    data: await fsp.readFile(getFixturePath('nodejs_logo.png')) },
+    { filename: 'ru-hexlet-io-assets-application.css', link: '/assets/application.css', data: await fsp.readFile(getFixturePath('application.css')) },
+    { filename: 'ru-hexlet-io-packs-js-runtime.js', link: '/packs/js/runtime.js', data: await fsp.readFile(getFixturePath('runtime.js')) }];
 });
 
 test('loadPage', async () => {
@@ -46,8 +40,7 @@ test('loadPage', async () => {
   try {
     const result = await loadPage('https://ru.hexlet.io/courses', tmpDirPath);
     expect(result).toBe(path.join(tmpDirPath, fileName));
-    expect(await fsp.readFile(path.join(assetsDirPath, imgAssetName))).toEqual(imgData);
-    expect(await fsp.readFile(path.join(assetsDirPath, cssAssetName))).toEqual(styleSheet);
+    assetData.forEach(async (asset) => { expect(await fsp.readFile(path.join(assetsDirPath, asset.filename))).toEqual(asset.data) });
     expect(await fsp.readFile(path.join(tmpDirPath, fileName), 'utf8'))
       .toBe(await fsp.readFile(getFixturePath('expected.html'), 'utf8'));
     expect(await fsp.readFile(path.join(tmpDirPath, fileName), 'utf8'))
