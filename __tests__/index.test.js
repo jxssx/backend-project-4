@@ -3,6 +3,7 @@ import path from 'path';
 import loadPage from '../src/index.js';
 import fsp from 'fs/promises';
 import os from 'os';
+import { log } from '../src/utils.js'
 
 const getFixturePath = (filename) => path.join('__fixtures__', filename);
 
@@ -24,6 +25,7 @@ nock.disableNetConnect();
 beforeAll(async () => {
   replyData = await fsp.readFile(getFixturePath('reply.txt'), 'utf8');
   tmpDirPath = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
+  log('Creating temp dir', tmpDirPath);
   assetsDirPath = path.join(tmpDirPath, 'ru-hexlet-io-courses_files');
   assetData = [{ filename: 'ru-hexlet-io-assets-professions-nodejs.png', link: '/assets/professions/nodejs.png',
     data: await fsp.readFile(getFixturePath('nodejs_logo.png')) },

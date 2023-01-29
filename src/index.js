@@ -1,4 +1,5 @@
 import fsp from 'fs/promises';
+import 'axios-debug-log';
 import axios from 'axios';
 import { buildPathToHtml, processAssets } from './utils.js';
 

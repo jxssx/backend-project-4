@@ -2,7 +2,10 @@ import path from 'path';
 import cheerio from 'cheerio';
 import axios from 'axios';
 import fsp from 'fs/promises';
+import debug from 'debug';
+import 'axios-debug-log';
 
+export const log = debug('page-loader');
 
 const cutUrl = (url) => url.replace(`${new URL(url).protocol}//`, '');
 
@@ -53,6 +56,7 @@ export const processAssets = (url, data, output) => {
     const attrValue = $(this).attr(tagAttrMapping[tag]);
     const assetLink = buildAssetLink(attrValue);
     const assetFileName = urlToName(assetLink);
+    log('Asset info', { assetFileName, assetLink })
     $(this).attr(attrName, path.join(dirName, assetFileName));
     return axios({
       url: assetLink,
@@ -63,6 +67,6 @@ export const processAssets = (url, data, output) => {
     return makeAssetsPromises(tag);
   });
   return fsp.mkdir(dirPath)
-    .then(() => Promise.all(assetsPromises))
+    .then(() => { log('Created assets dir', { dirPath }); return Promise.all(assetsPromises); })
     .then(() => $.html());
 };
