@@ -15,3 +15,6 @@
 
 ### page-loader assets downloading functionality demo:
 [![asciicast](https://asciinema.org/a/BijRdIjff8qi7rljasecrv64g.svg)](https://asciinema.org/a/BijRdIjff8qi7rljasecrv64g)
+
+### page-loader logging functionality demo:
+[![asciicast](https://asciinema.org/a/555554.svg)](https://asciinema.org/a/555554)
