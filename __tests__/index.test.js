@@ -10,15 +10,20 @@ const getFixturePath = (filename) => path.join('__fixtures__', filename);
 let tmpDirPath = '';
 let replyData = '';
 let assetsDirPath = '';
+const assetsDirName = 'ru-hexlet-io-courses_files';
 const fileName = 'ru-hexlet-io-courses.html';
 const baseURL = 'https://ru.hexlet.io';
+const pageURL = 'https://ru.hexlet.io/courses';
 let assetData;
 
 const nockAssetRequest = (link, data) => {
   return nock(baseURL)
+    .persist()
     .get(link)
     .reply(200, data)
 };
+
+const scope = nock(baseURL).persist();
 
 nock.disableNetConnect();
 
@@ -31,16 +36,30 @@ beforeAll(async () => {
     data: await fsp.readFile(getFixturePath('nodejs_logo.png')) },
     { filename: 'ru-hexlet-io-assets-application.css', link: '/assets/application.css', data: await fsp.readFile(getFixturePath('application.css')) },
     { filename: 'ru-hexlet-io-packs-js-runtime.js', link: '/packs/js/runtime.js', data: await fsp.readFile(getFixturePath('runtime.js')) }];
+  scope.get('/courses').reply(200, replyData);
+  assetData.forEach((obj) => { nockAssetRequest(obj.link, obj.data); });
 });
 
-test('loadPage', async () => {
-  nock('https://ru.hexlet.io')
-    .persist()
-    .get('/courses')
-    .reply(200, replyData);
-  assetData.forEach((obj) => { nockAssetRequest(obj.link, obj.data); });
+test('no reply error', async () => {
+  const invalidURL = 'https://doesntexist.net';
+  const noReplyError = `getaddrinfo ENOTFOUND ${invalidURL}`;
+  nock(invalidURL).persist().get('/').replyWithError(noReplyError);
+  await expect(loadPage(invalidURL, tmpDirPath)).rejects.toThrow(noReplyError);
+});
+
+test.each([404, 500])('status code error %s', async (code) => {
+  scope.get(`/${code}`).reply(code, '');
+  await expect(loadPage(`${baseURL}/${code}`, tmpDirPath)).rejects.toThrow(`Request failed with status code ${code}`);
+});
+
+test('filesystem errors', async () => {
+  const sysDirPath = '/sys';
+  
+});
+
+test('positive', async () => {
   try {
-    const result = await loadPage('https://ru.hexlet.io/courses', tmpDirPath);
+    const result = await loadPage(pageURL, tmpDirPath);
     expect(result).toBe(path.join(tmpDirPath, fileName));
     assetData.forEach(async (asset) => { expect(await fsp.readFile(path.join(assetsDirPath, asset.filename))).toEqual(asset.data) });
     expect(await fsp.readFile(path.join(tmpDirPath, fileName), 'utf8'))
