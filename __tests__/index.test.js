@@ -53,14 +53,20 @@ test.each([404, 500])('status code error %s', async (code) => {
 });
 
 test('filesystem errors', async () => {
-  const sysDirPath = '/sys';
+  await expect(loadPage(pageURL, '/sys')).rejects.toThrow(`EACCES: permission denied, mkdir '/sys/ru-hexlet-io-courses_files'`)
+  
+  const filepath = getFixturePath('expected.html');
+  await expect(loadPage(pageURL, filepath))
+    .rejects.toThrow(`ENOTDIR: not a directory, mkdir '${filepath}/${assetsDirName}'`);
+  
+  await expect(loadPage(pageURL, 'doesntexist'))
+    .rejects.toThrow(`ENOENT: no such file or directory, mkdir 'doesntexist/${assetsDirName}'`);
   
 });
 
 test('positive', async () => {
   try {
-    const result = await loadPage(pageURL, tmpDirPath);
-    expect(result).toBe(path.join(tmpDirPath, fileName));
+    await loadPage(pageURL, tmpDirPath);
     assetData.forEach(async (asset) => { expect(await fsp.readFile(path.join(assetsDirPath, asset.filename))).toEqual(asset.data) });
     expect(await fsp.readFile(path.join(tmpDirPath, fileName), 'utf8'))
       .toBe(await fsp.readFile(getFixturePath('expected.html'), 'utf8'));

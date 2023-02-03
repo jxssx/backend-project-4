@@ -45,7 +45,8 @@ export const processAssets = (url, data, output) => {
   };
   const $ = cheerio.load(data);
   
-  const makeAssetsPromises = (tag) => $(`${tag}[${tagAttrMapping[tag]}]`)
+  const makeAssetsPromises = (tag) => {
+  const promises = $(`${tag}[${tagAttrMapping[tag]}]`)
   .filter(function () {
     const attrName = tagAttrMapping[tag];
     const link =  new URL($(this).attr(attrName), urlAPI.origin);
@@ -58,22 +59,20 @@ export const processAssets = (url, data, output) => {
     const assetFileName = urlToName(assetLink);
     log('Asset info', { assetFileName, assetLink })
     $(this).attr(attrName, path.join(dirName, assetFileName));
-      return axios({
-        url: assetLink,
-        responseType: 'arraybuffer',
-      }).catch((e) => { 
-          console.error(`Возникла проблема с ресурсом страницы по адресу ${e.config.url}. Код ошибки: ${e.request.res.statusCode}.`);
-          process.exit(1);
-        })
-        .then(({ data }) => fsp.writeFile(path.join(dirPath, assetFileName), data)
-        .catch((e) => { console.error(`Ошибка при записи файла по пути ${e.path}. Код ошибки: ${e.code}.`); process.exit(1); }))})
+    return axios({
+      url: assetLink,
+      responseType: 'arraybuffer',
+      }).then(({ data }) => fsp.writeFile(path.join(dirPath, assetFileName), data))})
         .get();
-
-  const assetsPromises = Object.keys(tagAttrMapping).flatMap((tag) => {
-    return makeAssetsPromises(tag);
-  });
+      return promises;
+  }
+        
   return fsp.mkdir(dirPath)
-    .catch((e) => { console.error(`Ошибка при создании папки по пути ${e.path}. Код ошибки: ${e.code}`); process.exit(1); } )
-    .then(() => { log('Created assets dir', { dirPath }); return Promise.all(assetsPromises); })
+  .then(() => {
+    log('Created assets dir', { dirPath });
+    const assetsPromises = Object.keys(tagAttrMapping).flatMap((tag) => {
+      return makeAssetsPromises(tag);
+    });
+    return Promise.all(assetsPromises) })
     .then(() => $.html());
-};
+}
