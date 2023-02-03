@@ -18,3 +18,6 @@
 
 ### page-loader logging functionality demo:
 [![asciicast](https://asciinema.org/a/555554.svg)](https://asciinema.org/a/555554)
+
+## page-loader exception handling:
+[![asciicast](https://asciinema.org/a/557224.svg)](https://asciinema.org/a/557224)
