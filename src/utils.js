@@ -66,20 +66,18 @@ export const processAssets = (url, data, output) => {
             url: assetLink,
             responseType: 'arraybuffer',
           })
-            .then(({ data }) => { fsp.writeFile(path.join(dirPath, assetFileName), data) })
-        }})
-    .get();
+            .then((response) => { fsp.writeFile(path.join(dirPath, assetFileName), response.data); }),
+        }; })
+      .get();
     return tasks;
-  } 
+  }
         
   return fsp.mkdir(dirPath)
     .then(() => {
       log('Created assets dir', { dirPath });
-      const taskObjects = Object.keys(tagAttrMapping).flatMap((tag) => {
-        return makeTasks(tag);
-      });
-      const tasks = new Listr(taskObjects, { concurrent: true })
+      const taskObjects = Object.keys(tagAttrMapping).flatMap((tag) => makeTasks(tag));
+      const tasks = new Listr(taskObjects, { concurrent: true });
       return tasks.run();
       })
     .then(() => $.html());
-}
+};
