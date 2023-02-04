@@ -1,9 +1,9 @@
 import nock from 'nock';
 import path from 'path';
-import loadPage from '../src/index.js';
 import fsp from 'fs/promises';
 import os from 'os';
-import { log } from '../src/utils.js'
+import { log } from '../src/utils.js';
+import loadPage from '../src/index.js';
 
 const getFixturePath = (filename) => path.join('__fixtures__', filename);
 
@@ -16,12 +16,10 @@ const baseURL = 'https://ru.hexlet.io';
 const pageURL = 'https://ru.hexlet.io/courses';
 let assetData;
 
-const nockAssetRequest = (link, data) => {
-  return nock(baseURL)
+const nockAssetRequest = (link, data) => nock(baseURL)
     .persist()
     .get(link)
-    .reply(200, data)
-};
+    .reply(200, data);
 
 const scope = nock(baseURL).persist();
 
@@ -32,10 +30,22 @@ beforeAll(async () => {
   tmpDirPath = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
   log('Creating temp dir', tmpDirPath);
   assetsDirPath = path.join(tmpDirPath, 'ru-hexlet-io-courses_files');
-  assetData = [{ filename: 'ru-hexlet-io-assets-professions-nodejs.png', link: '/assets/professions/nodejs.png',
-    data: await fsp.readFile(getFixturePath('nodejs_logo.png')) },
-    { filename: 'ru-hexlet-io-assets-application.css', link: '/assets/application.css', data: await fsp.readFile(getFixturePath('application.css')) },
-    { filename: 'ru-hexlet-io-packs-js-runtime.js', link: '/packs/js/runtime.js', data: await fsp.readFile(getFixturePath('runtime.js')) }];
+  assetData = [
+    {
+      filename: 'ru-hexlet-io-assets-professions-nodejs.png',
+      link: '/assets/professions/nodejs.png',
+      data: await fsp.readFile(getFixturePath('nodejs_logo.png')),
+    },
+    {
+      filename: 'ru-hexlet-io-assets-application.css',
+      link: '/assets/application.css',
+      data: await fsp.readFile(getFixturePath('application.css')),
+    },
+    {
+      filename: 'ru-hexlet-io-packs-js-runtime.js',
+      link: '/packs/js/runtime.js',
+      data: await fsp.readFile(getFixturePath('runtime.js')),
+    }];
   scope.get('/courses').reply(200, replyData);
   assetData.forEach((obj) => { nockAssetRequest(obj.link, obj.data); });
 });
