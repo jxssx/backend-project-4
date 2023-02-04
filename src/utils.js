@@ -67,17 +67,17 @@ export const processAssets = (url, data, output) => {
             responseType: 'arraybuffer',
           })
             .then((response) => { fsp.writeFile(path.join(dirPath, assetFileName), response.data); }),
-        }; })
-      .get();
+        };
+      }).get();
     return tasks;
-  }
-        
+  };
+
   return fsp.mkdir(dirPath)
     .then(() => {
       log('Created assets dir', { dirPath });
       const taskObjects = Object.keys(tagAttrMapping).flatMap((tag) => makeTasks(tag));
       const tasks = new Listr(taskObjects, { concurrent: true });
       return tasks.run();
-      })
+    })
     .then(() => $.html());
 };
