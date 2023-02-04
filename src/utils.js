@@ -2,6 +2,7 @@ import path from 'path';
 import cheerio from 'cheerio';
 import axios from 'axios';
 import fsp from 'fs/promises';
+import Listr from 'listr';
 import debug from 'debug';
 import 'axios-debug-log';
 
@@ -46,33 +47,38 @@ export const processAssets = (url, data, output) => {
   const $ = cheerio.load(data);
   
   const makeAssetsPromises = (tag) => {
-  const promises = $(`${tag}[${tagAttrMapping[tag]}]`)
-  .filter(function () {
-    const attrName = tagAttrMapping[tag];
-    const link =  new URL($(this).attr(attrName), urlAPI.origin);
-    return link.origin === urlAPI.origin; 
-  })
-  .map(function () {
-    const attrName = tagAttrMapping[tag];
-    const attrValue = $(this).attr(tagAttrMapping[tag]);
-    const assetLink = buildAssetLink(attrValue);
-    const assetFileName = urlToName(assetLink);
-    log('Asset info', { assetFileName, assetLink })
-    $(this).attr(attrName, path.join(dirName, assetFileName));
-    return axios({
-      url: assetLink,
-      responseType: 'arraybuffer',
-      }).then(({ data }) => fsp.writeFile(path.join(dirPath, assetFileName), data))})
-        .get();
-      return promises;
-  }
+    const promises = $(`${tag}[${tagAttrMapping[tag]}]`)
+    .filter(function () {
+      const attrName = tagAttrMapping[tag];
+      const link =  new URL($(this).attr(attrName), urlAPI.origin);
+      return link.origin === urlAPI.origin; 
+    })
+    .map(function () {
+      const attrName = tagAttrMapping[tag];
+      const attrValue = $(this).attr(tagAttrMapping[tag]);
+      const assetLink = buildAssetLink(attrValue);
+      const assetFileName = urlToName(assetLink);
+      log('Asset info', { assetFileName, assetLink })
+      $(this).attr(attrName, path.join(dirName, assetFileName));
+      return { title: `Downloading '${assetLink}'`, task: () => {
+          return axios({
+            url: assetLink,
+            responseType: 'arraybuffer',
+            })
+            .then(({ data }) => { fsp.writeFile(path.join(dirPath, assetFileName), data) })
+        }}})
+    .get();
+    return promises;
+  } 
         
   return fsp.mkdir(dirPath)
-  .then(() => {
-    log('Created assets dir', { dirPath });
-    const assetsPromises = Object.keys(tagAttrMapping).flatMap((tag) => {
-      return makeAssetsPromises(tag);
-    });
-    return Promise.all(assetsPromises) })
+    .then(() => {
+      log('Created assets dir', { dirPath });
+      const assetsPromises = Object.keys(tagAttrMapping).flatMap((tag) => {
+        return makeAssetsPromises(tag);
+      });
+      const tasks = new Listr(assetsPromises, { concurrent: true })
+      return tasks.run();
+      })
     .then(() => $.html());
 }

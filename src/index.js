@@ -9,6 +9,6 @@ const loadPage = (url, output = process.cwd()) => {
     .then(({ data }) => processAssets(url, data, output))
     .then((processedData) => fsp.writeFile(outputPath, processedData))
     .then(() => { console.log(outputPath) });
-};
+}; 
 
 export default loadPage;
