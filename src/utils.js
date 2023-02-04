@@ -62,13 +62,12 @@ export const processAssets = (url, data, output) => {
         $(this).attr(attrName, path.join(dirName, assetFileName));
         return {
           title: `Downloading '${assetLink}'`,
-          task: () => {
-          return axios({
+          task: () => axios({
             url: assetLink,
             responseType: 'arraybuffer',
-            })
+          })
             .then(({ data }) => { fsp.writeFile(path.join(dirPath, assetFileName), data) })
-        }}})
+        }})
     .get();
     return tasks;
   } 
