@@ -21,3 +21,6 @@
 
 ## page-loader exception handling:
 [![asciicast](https://asciinema.org/a/557224.svg)](https://asciinema.org/a/557224)
+
+## page-loader progress tracking functionality:
+[![asciicast](https://asciinema.org/a/557415.svg)](https://asciinema.org/a/557415)
