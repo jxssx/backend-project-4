@@ -8,7 +8,7 @@ const loadPage = (url, output = process.cwd()) => {
   return axios.get(url)
     .then(({ data }) => processAssets(url, data, output))
     .then((processedData) => fsp.writeFile(outputPath, processedData))
-    .then(() => { console.log(outputPath) });
-}; 
+    .then(() => { console.log(outputPath); });
+};
 
 export default loadPage;

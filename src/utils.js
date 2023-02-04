@@ -13,7 +13,7 @@ const cutUrl = (url) => url.replace(`${new URL(url).protocol}//`, '');
 const processName = (name, replacer = '-') => name.match(/\w*/gi)
   .filter((x) => x)
   .join(replacer);
-  
+
 export const urlToName = (url, defaultFormat = 'html') => {
   const urlWithoutProtocol = cutUrl(url);
   const { ext } = path.parse(url);
@@ -45,22 +45,24 @@ export const processAssets = (url, data, output) => {
     script: 'src',
   };
   const $ = cheerio.load(data);
-  
-  const makeAssetsPromises = (tag) => {
-    const promises = $(`${tag}[${tagAttrMapping[tag]}]`)
-    .filter(function () {
-      const attrName = tagAttrMapping[tag];
-      const link =  new URL($(this).attr(attrName), urlAPI.origin);
-      return link.origin === urlAPI.origin; 
-    })
-    .map(function () {
-      const attrName = tagAttrMapping[tag];
-      const attrValue = $(this).attr(tagAttrMapping[tag]);
-      const assetLink = buildAssetLink(attrValue);
-      const assetFileName = urlToName(assetLink);
-      log('Asset info', { assetFileName, assetLink })
-      $(this).attr(attrName, path.join(dirName, assetFileName));
-      return { title: `Downloading '${assetLink}'`, task: () => {
+
+  const makeTasks = (tag) => {
+    const tasks = $(`${tag}[${tagAttrMapping[tag]}]`)
+      .filter(function isLocalAsset() {
+        const attrName = tagAttrMapping[tag];
+        const link = new URL($(this).attr(attrName), urlAPI.origin);
+        return link.origin === urlAPI.origin;
+      })
+      .map(function createTaskObject() {
+        const attrName = tagAttrMapping[tag];
+        const attrValue = $(this).attr(tagAttrMapping[tag]);
+        const assetLink = buildAssetLink(attrValue);
+        const assetFileName = urlToName(assetLink);
+        log('Asset info', { assetFileName, assetLink });
+        $(this).attr(attrName, path.join(dirName, assetFileName));
+        return {
+          title: `Downloading '${assetLink}'`,
+          task: () => {
           return axios({
             url: assetLink,
             responseType: 'arraybuffer',
@@ -68,16 +70,16 @@ export const processAssets = (url, data, output) => {
             .then(({ data }) => { fsp.writeFile(path.join(dirPath, assetFileName), data) })
         }}})
     .get();
-    return promises;
+    return tasks;
   } 
         
   return fsp.mkdir(dirPath)
     .then(() => {
       log('Created assets dir', { dirPath });
-      const assetsPromises = Object.keys(tagAttrMapping).flatMap((tag) => {
-        return makeAssetsPromises(tag);
+      const taskObjects = Object.keys(tagAttrMapping).flatMap((tag) => {
+        return makeTasks(tag);
       });
-      const tasks = new Listr(assetsPromises, { concurrent: true })
+      const tasks = new Listr(taskObjects, { concurrent: true })
       return tasks.run();
       })
     .then(() => $.html());

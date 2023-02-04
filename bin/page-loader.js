@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import loadPage from '../src/index.js';
 import { program } from 'commander';
+import loadPage from '../src/index.js';
 
 program
   .name('page-loader')

@@ -17,9 +17,9 @@ const pageURL = 'https://ru.hexlet.io/courses';
 let assetData;
 
 const nockAssetRequest = (link, data) => nock(baseURL)
-    .persist()
-    .get(link)
-    .reply(200, data);
+  .persist()
+  .get(link)
+  .reply(200, data);
 
 const scope = nock(baseURL).persist();
 
@@ -63,27 +63,27 @@ test.each([404, 500])('status code error %s', async (code) => {
 });
 
 test('filesystem errors', async () => {
-  await expect(loadPage(pageURL, '/sys')).rejects.toThrow(`EACCES: permission denied, mkdir '/sys/ru-hexlet-io-courses_files'`)
-  
+  await expect(loadPage(pageURL, '/sys')).rejects.toThrow('EACCES: permission denied, mkdir \'/sys/ru-hexlet-io-courses_files\'');
+
   const filepath = getFixturePath('expected.html');
   await expect(loadPage(pageURL, filepath))
     .rejects.toThrow(`ENOTDIR: not a directory, mkdir '${filepath}/${assetsDirName}'`);
-  
+
   await expect(loadPage(pageURL, 'doesntexist'))
     .rejects.toThrow(`ENOENT: no such file or directory, mkdir 'doesntexist/${assetsDirName}'`);
-  
 });
 
 test('positive', async () => {
   try {
     await loadPage(pageURL, tmpDirPath);
-    assetData.forEach(async (asset) => { expect(await fsp.readFile(path.join(assetsDirPath, asset.filename))).toEqual(asset.data) });
+    assetData.forEach(async (asset) => {
+      expect(await fsp.readFile(path.join(assetsDirPath, asset.filename))).toEqual(asset.data);
+    });
     expect(await fsp.readFile(path.join(tmpDirPath, fileName), 'utf8'))
       .toBe(await fsp.readFile(getFixturePath('expected.html'), 'utf8'));
     expect(await fsp.readFile(path.join(tmpDirPath, fileName), 'utf8'))
       .toBe(await fsp.readFile(getFixturePath('expected.html'), 'utf8'));
-  }
-  catch (e) {
+  } catch (e) {
     throw new Error(e);
   }
 });
