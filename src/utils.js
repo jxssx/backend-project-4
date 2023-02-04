@@ -66,7 +66,9 @@ export const processAssets = (url, data, output) => {
             url: assetLink,
             responseType: 'arraybuffer',
           })
-            .then((response) => { fsp.writeFile(path.join(dirPath, assetFileName), response.data); }),
+            .then((response) => {
+              fsp.writeFile(path.join(dirPath, assetFileName), response.data);
+            }),
         };
       }).get();
     return tasks;
