@@ -1,5 +1,5 @@
 {
-  "name": "page_loader",
+  "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "[![Actions Status](https://github.com/jxssx/backend-project-4/workflows/hexlet-check/badge.svg)](https://github.com/jxssx/backend-project-4/actions)",
   "main": "src/index.js",
