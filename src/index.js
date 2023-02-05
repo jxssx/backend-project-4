@@ -50,9 +50,10 @@ const downloadAssets = (url, assetList, $, assetDirPath) => {
             }),
         };
       });
-    const tasks = new Listr(taskList, { concurrent: true });
 
-    return tasks.run().then(() => $.html());
+  const tasks = new Listr(taskList, { concurrent: true });
+  
+  return tasks.run().then(() => $.html());
 };
 
 const loadPage = (url, output = process.cwd()) => {
