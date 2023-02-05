@@ -12,8 +12,9 @@ program
   .action((url, options) => {
     loadPage(url, options.output)
       .catch((e) => {
-        process.exitCode = 1;
         console.error(e.message);
-      });
+        process.exit(1);
+      })
+      .then((path) => { console.log(path); });
   })
   .parse(process.argv);
