@@ -44,21 +44,21 @@ const makeAssetList = (url, $, assetDirName) => {
 
 const downloadAssets = (url, assetList, $, assetDirPath) => {
   const taskList = assetList
-      .map(function createTaskObject(asset) {
-        return {
-          title: `Downloading '${asset.link}'`,
-          task: () => axios({
-            url: asset.link,
-            responseType: 'arraybuffer',
-          })
-            .then((response) => {
-              fsp.writeFile(path.join(assetDirPath, asset.fileName), response.data);
-            }),
-        };
-      });
+    .map((asset) => {
+      return {
+        title: `Downloading '${asset.link}'`,
+        task: () => axios({
+          url: asset.link,
+          responseType: 'arraybuffer',
+        })
+          .then((response) => {
+            fsp.writeFile(path.join(assetDirPath, asset.fileName), response.data);
+          }),
+      };
+    });
 
   const tasks = new Listr(taskList, { concurrent: true });
-  
+
   return tasks.run().then(() => $.html());
 };
 
@@ -81,7 +81,7 @@ const loadPage = (url, output = process.cwd()) => {
       return downloadAssets(url, assetList, $, assetDirPath);
     })
     .then((processedData) => {
-      log(`writing main html file at ${outputPath}`)
+      log(`writing main html file at ${outputPath}`);
       fsp.writeFile(outputPath, processedData);
     })
     .then(() => outputPath);
