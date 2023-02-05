@@ -44,18 +44,16 @@ const makeAssetList = (url, $, assetDirName) => {
 
 const downloadAssets = (url, assetList, $, assetDirPath) => {
   const taskList = assetList
-    .map((asset) => {
-      return {
-        title: `Downloading '${asset.link}'`,
-        task: () => axios({
-          url: asset.link,
-          responseType: 'arraybuffer',
-        })
-          .then((response) => {
-            fsp.writeFile(path.join(assetDirPath, asset.fileName), response.data);
-          }),
-      };
-    });
+    .map((asset) => ({
+      title: `Downloading '${asset.link}'`,
+      task: () => axios({
+        url: asset.link,
+        responseType: 'arraybuffer',
+      })
+        .then((response) => {
+          fsp.writeFile(path.join(assetDirPath, asset.fileName), response.data);
+        }),
+    }));
 
   const tasks = new Listr(taskList, { concurrent: true });
 
