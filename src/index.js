@@ -4,7 +4,13 @@ import axios from 'axios';
 import path from 'path';
 import cheerio from 'cheerio';
 import Listr from 'listr';
-import { buildPathToHtml, processName, cutUrl, urlToName, log } from './utils.js';
+import {
+  buildPathToHtml,
+  processName,
+  cutUrl,
+  urlToName,
+  log,
+} from './utils.js';
 
 const makeAssetList = (url, $, assetDirName) => {
   const urlAPI = new URL(url);
@@ -33,7 +39,7 @@ const makeAssetList = (url, $, assetDirName) => {
       $(this).attr(attrName, path.join(assetDirName, fileName));
       return { link: assetLink, fileName };
     })
-    .get())
+    .get());
 };
 
 const downloadAssets = (url, assetList, $, assetDirPath) => {
